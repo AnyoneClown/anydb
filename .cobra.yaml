@@ -1,0 +1,9 @@
+author: Denys <https://github.com/AnyoneClown>
+year: 2024
+license:
+  header: |
+    This is my license. There are many like it, but this one is mine.
+    My license is my best friend. It is my life. I must master it as I must
+    master my life.
+  text: |
+    {{ .copyright }}
