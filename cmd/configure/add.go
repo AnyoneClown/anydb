@@ -222,7 +222,7 @@ var addCmd = &cobra.Command{
 			fmt.Printf("could not start program: %s\n", err)
 			os.Exit(1)
 		}
-		
+
 		m = result.(addModel)
 
 		for _, input := range m.inputs {
