@@ -16,14 +16,17 @@ type item struct {
 	dbConfig DBConfig
 }
 
-func (i item) Title() string       { return i.dbConfig.Name }
-func (i item) Description() string { return fmt.Sprintf("%s@%s:%s", i.dbConfig.Name, i.dbConfig.Host, i.dbConfig.Database) }
+func (i item) Title() string { return i.dbConfig.Name }
+func (i item) Description() string {
+	return fmt.Sprintf("%s@%s:%s", i.dbConfig.Name, i.dbConfig.Host, i.dbConfig.Database)
+}
 func (i item) FilterValue() string { return i.dbConfig.Name }
 
 type model struct {
-	list     list.Model
-	choice   *DBConfig
-	quitting bool
+	list      list.Model
+	choice    *DBConfig
+	quitting  bool
+	noConfigs bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -60,10 +63,43 @@ func (m model) View() string {
 	if m.choice != nil {
 		return fmt.Sprintf("You chose: %s\n", m.choice.Name)
 	}
-	if m.quitting {
+	if m.quitting && !m.noConfigs {
 		return "No configuration selected. Goodbye!\n"
 	}
+	if m.noConfigs {
+		return docStyle.Render(`
+	No configurations available.
+
+	Press 'enter' or 'q' to exit
+
+	You can also use 'anydb configure add' from the command line to add a new configuration.`)
+	}
 	return docStyle.Render(m.list.View())
+}
+
+func newModel() model {
+	items := make([]list.Item, len(configs)) // Create slice with configuration items
+	for i, config := range configs {
+		items[i] = item{dbConfig: config}
+	}
+
+	delegate := list.NewDefaultDelegate()
+	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("170")).BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("170"))
+	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("241"))
+
+	m := model{
+		list:      list.New(items, delegate, 0, 0),
+		noConfigs: len(configs) == 0,
+	}
+	m.list.Title = "Database Configurations"
+	m.list.SetShowStatusBar(true)
+	m.list.SetFilteringEnabled(true)
+	m.list.Styles.Title = lipgloss.NewStyle().
+		Background(lipgloss.Color("62")).
+		Foreground(lipgloss.Color("230")).
+		Padding(0, 1)
+
+	return m
 }
 
 var ConfigureCmd = &cobra.Command{
@@ -71,30 +107,7 @@ var ConfigureCmd = &cobra.Command{
 	Short: "Configure your database credentials",
 	Long:  `Use it to choose database credentials. You can add, edit, remove, and list your configurations!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(configs) == 0 {
-			fmt.Println("No configurations available. Use 'configure add' to add a new configuration.")
-			return
-		}
-
-		items := make([]list.Item, len(configs)) // Create slice with configuration items
-		for i, config := range configs {
-			items[i] = item{dbConfig: config}
-		}
-
-		delegate := list.NewDefaultDelegate()
-		delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.Foreground(lipgloss.Color("170")).BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("170"))
-		delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.Foreground(lipgloss.Color("241"))
-
-		m := model{list: list.New(items, delegate, 0, 0)}
-		m.list.Title = "Database Configurations"
-		m.list.SetShowStatusBar(false)
-		m.list.SetFilteringEnabled(false)
-		m.list.Styles.Title = lipgloss.NewStyle().
-			Background(lipgloss.Color("62")).
-			Foreground(lipgloss.Color("230")).
-			Padding(0, 1)
-
-		p := tea.NewProgram(m, tea.WithAltScreen())
+		p := tea.NewProgram(newModel(), tea.WithAltScreen())
 
 		finalModel, err := p.Run()
 		if err != nil {
