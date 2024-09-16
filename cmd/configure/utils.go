@@ -25,6 +25,7 @@ type DBConfig struct {
 var configs []DBConfig
 var configFile string
 var defaultConfigFile string
+var defaultConfigData DBConfig
 
 func createFileAndDir() error {
 	homeDir, _ := os.UserHomeDir()
@@ -89,11 +90,15 @@ func saveConfigs(configs []DBConfig, file string) error {
 	return os.WriteFile(file, data, 0644)
 }
 
-func containsErrors(errors []string) bool {
-	for _, err := range errors {
-		if err != "" {
-			return true
-		}
+func loadDefaultConfig() error {
+	data, err := os.ReadFile(defaultConfigFile)
+	if err != nil {
+		return err
 	}
-	return false
+
+	err = yaml.Unmarshal(data, &defaultConfigData)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -58,9 +58,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	if m.choice != nil {
-		return fmt.Sprintf("You chose: %s\n", m.choice.Name)
-	}
 	if m.quitting && !m.noConfigs {
 		return "No configuration selected. Goodbye!\n"
 	}
@@ -75,7 +72,7 @@ func (m model) View() string {
 	return docStyle.Render(m.list.View())
 }
 
-func newModel() model {
+func newModel(title string) model {
 	items := make([]list.Item, len(configs)) // Create slice with configuration items
 	for i, config := range configs {
 		items[i] = item{dbConfig: config}
@@ -89,7 +86,7 @@ func newModel() model {
 		list:      list.New(items, delegate, 0, 0),
 		noConfigs: len(configs) == 0,
 	}
-	m.list.Title = "Database Configurations"
+	m.list.Title = title
 	m.list.SetShowStatusBar(true)
 	m.list.SetFilteringEnabled(true)
 	m.list.Styles.Title = lipgloss.NewStyle().

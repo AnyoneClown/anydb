@@ -211,7 +211,7 @@ func (m addModel) View() string {
 
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add a new database configuration",
+	Short: "Add new database configuration",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		m := initialModel()
@@ -263,21 +263,6 @@ var addCmd = &cobra.Command{
 }
 
 func init() {
-	createFileAndDir()
-
-	var err error
-	configs, err = loadConfigs(configFile)
-	if err != nil {
-		fmt.Println("File doesn't exist, creating configuration file")
-	}
-
-	addCmd.Flags().String("name", "", "Configuration name")
-	addCmd.Flags().String("host", "localhost", "Database host")
-	addCmd.Flags().Int("port", 5432, "Database port")
-	addCmd.Flags().String("user", "", "Database user")
-	addCmd.Flags().String("password", "", "Database password")
-	addCmd.Flags().String("database", "", "Database name")
-
 	addCmd.Flags().BoolP("help", "h", false, "help for add")
 	addCmd.Flags().MarkHidden("help")
 }
