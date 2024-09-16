@@ -3,42 +3,16 @@ Copyright © 2024 Denys <https://github.com/AnyoneClown>
 This is my license. There are many like it, but this one is mine.
 My license is my best friend. It is my life. I must master it as I must
 master my life.
-
 */
 package configure
 
 import (
-	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
-
-type DBConfig struct {
-	Name     string `json:"name"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	Database string `json:"database"`
-}
-
-var configs []DBConfig
-var configFile string
-
-func loadConfigs() {
-	data, err := os.ReadFile(configFile)
-	if err != nil {
-		return
-	}
-	json.Unmarshal(data, &configs)
-}
-
-func saveConfigs() {
-	data, _ := json.MarshalIndent(configs, "", "  ")
-	os.WriteFile(configFile, data, 0644)
-}
 
 var addCmd = &cobra.Command{
 	Use:   "add",
@@ -62,14 +36,24 @@ var addCmd = &cobra.Command{
 		}
 
 		configs = append(configs, config)
-		saveConfigs()
+
+		if err := saveConfigs(configs, configFile); err != nil {
+			fmt.Printf("Failed to save configuration: %v\n", err)
+		} else {
+			fmt.Println("Configuration saved successfully!")
+		}
 	},
 }
 
 func init() {
 	homeDir, _ := os.UserHomeDir()
-	configFile = filepath.Join(homeDir, "anydb-config.json")
-	loadConfigs()
+	configFile = filepath.Join(homeDir, "anydb-config.yaml")
+
+	var err error
+	configs, err = loadConfigs(configFile)
+	if err != nil {
+		fmt.Println("File doesn't exist, creating configuration file")
+	}
 
 	addCmd.Flags().String("name", "", "Configuration name")
 	addCmd.Flags().String("host", "localhost", "Database host")
