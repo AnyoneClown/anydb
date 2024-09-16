@@ -8,8 +8,6 @@ package configure
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -46,8 +44,7 @@ var addCmd = &cobra.Command{
 }
 
 func init() {
-	homeDir, _ := os.UserHomeDir()
-	configFile = filepath.Join(homeDir, "anydb-config.yaml")
+	createFileAndDir()
 
 	var err error
 	configs, err = loadConfigs(configFile)

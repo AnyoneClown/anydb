@@ -8,6 +8,7 @@ package configure
 
 import (
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 )
@@ -23,6 +24,42 @@ type DBConfig struct {
 
 var configs []DBConfig
 var configFile string
+var defaultConfigFile string
+
+func createFileAndDir() error {
+	homeDir, _ := os.UserHomeDir()
+	configDir := filepath.Join(homeDir, ".anydb")
+	configFile = filepath.Join(configDir, "anydb-config.yaml")
+	defaultConfigFile = filepath.Join(configDir, "anydb-default-config.yaml")
+
+	// Check if the directory exists, if not, create it
+	if _, err := os.Stat(configDir); os.IsNotExist(err) {
+		err = os.Mkdir(configDir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Check if the config file exists, if not, create it
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		file, err := os.Create(configFile)
+		if err != nil {
+			return err
+		}
+		file.Close()
+	}
+
+	// Check if the default config file exists, if not, create it
+	if _, err := os.Stat(defaultConfigFile); os.IsNotExist(err) {
+		file, err := os.Create(defaultConfigFile)
+		if err != nil {
+			return err
+		}
+		file.Close()
+	}
+
+	return nil
+}
 
 func loadConfigs(file string) ([]DBConfig, error) {
 	var configs []DBConfig
