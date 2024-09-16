@@ -1,9 +1,3 @@
-/*
-Copyright © 2024 Denys <https://github.com/AnyoneClown>
-This is my license. There are many like it, but this one is mine.
-My license is my best friend. It is my life. I must master it as I must
-master my life.
-*/
 package configure
 
 import (
@@ -26,6 +20,7 @@ var (
 	noStyle             = lipgloss.NewStyle()
 	helpStyle           = blurredStyle
 	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
+	errorStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 
 	focusedButton = focusedStyle.Render("[ Submit ]")
 	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
@@ -35,7 +30,7 @@ type addModel struct {
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
-	errors []string
+	errors     []string
 }
 
 func validateNotEmpty(value string) error {
@@ -53,10 +48,10 @@ func validatePort(value string) error {
 	return nil
 }
 
-
 func initialModel() addModel {
 	m := addModel{
 		inputs: make([]textinput.Model, 6),
+		errors: make([]string, 6),
 	}
 
 	var t textinput.Model
@@ -109,7 +104,6 @@ func (m addModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "esc":
 			return m, tea.Quit
 
-		// Change cursor mode
 		case "ctrl+r":
 			m.cursorMode++
 			if m.cursorMode > cursor.CursorHide {
@@ -121,17 +115,13 @@ func (m addModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, tea.Batch(cmds...)
 
-		// Set focus to next input
 		case "tab", "shift+tab", "enter", "up", "down":
 			s := msg.String()
 
-			// Did the user press enter while the submit button was focused?
-			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
 				return m, tea.Quit
 			}
 
-			// Cycle indexes
 			if s == "up" || s == "shift+tab" {
 				m.focusIndex--
 			} else {
@@ -147,13 +137,11 @@ func (m addModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds := make([]tea.Cmd, len(m.inputs))
 			for i := 0; i <= len(m.inputs)-1; i++ {
 				if i == m.focusIndex {
-					// Set focused state
 					cmds[i] = m.inputs[i].Focus()
 					m.inputs[i].PromptStyle = focusedStyle
 					m.inputs[i].TextStyle = focusedStyle
 					continue
 				}
-				// Remove focused state
 				m.inputs[i].Blur()
 				m.inputs[i].PromptStyle = noStyle
 				m.inputs[i].TextStyle = noStyle
@@ -163,7 +151,6 @@ func (m addModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// Handle character input and blinking
 	cmd := m.updateInputs(msg)
 
 	return m, cmd
@@ -172,10 +159,13 @@ func (m addModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *addModel) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
-	// Only text inputs with Focus() set will respond, so it's safe to simply
-	// update all of them here without any further logic.
 	for i := range m.inputs {
 		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+		if err := m.inputs[i].Validate(m.inputs[i].Value()); err != nil {
+			m.errors[i] = err.Error()
+		} else {
+			m.errors[i] = ""
+		}
 	}
 
 	return tea.Batch(cmds...)
@@ -185,9 +175,24 @@ func (m addModel) View() string {
 	var b strings.Builder
 
 	for i := range m.inputs {
-		b.WriteString(m.inputs[i].View())
+		inputView := m.inputs[i].View()
+		errorView := ""
+		if m.errors[i] != "" {
+			errorView = errorStyle.Render(m.errors[i])
+		}
+
+		inputWidth := lipgloss.Width(inputView)
+
+		padding := 120 - inputWidth - 100
+		if padding < 0 {
+			padding = 0
+		}
+
+		row := fmt.Sprintf("%s%s%s", inputView, strings.Repeat(" ", padding), errorView)
+		b.WriteString(row)
+
 		if i < len(m.inputs)-1 {
-			b.WriteRune('\n')
+			b.WriteString("\n")
 		}
 	}
 
@@ -209,26 +214,20 @@ var addCmd = &cobra.Command{
 	Short: "Add a new database configuration",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		addStart := tea.NewProgram(initialModel())
+		m := initialModel()
+
+		addStart := tea.NewProgram(m)
 		result, err := addStart.Run()
-		if  err != nil {
+		if err != nil {
 			fmt.Printf("could not start program: %s\n", err)
 			os.Exit(1)
 		}
 		
-		m := result.(addModel)
-		var validationErrors []string
+		m = result.(addModel)
 
 		for _, input := range m.inputs {
 			if err := input.Validate(input.Value()); err != nil {
-				validationErrors = append(validationErrors, err.Error())
-			}
-		}
-
-		if len(validationErrors) > 0 {
-			fmt.Println("Validation errors:")
-			for index, vErr := range validationErrors {
-				fmt.Printf("%d: %s\n", index + 1, vErr)
+				return
 			}
 		}
 
@@ -241,6 +240,7 @@ var addCmd = &cobra.Command{
 
 		portInt, err := strconv.Atoi(port)
 		if err != nil {
+			fmt.Printf("Invalid port number: %s\n", err)
 			return
 		}
 
@@ -256,6 +256,8 @@ var addCmd = &cobra.Command{
 		configs = append(configs, config)
 		if err := saveConfigs(configs, configFile); err != nil {
 			fmt.Printf("Failed to save configuration: %v\n", err)
+		} else {
+			fmt.Println("Configuration saved successfully.")
 		}
 	},
 }
@@ -275,13 +277,6 @@ func init() {
 	addCmd.Flags().String("user", "", "Database user")
 	addCmd.Flags().String("password", "", "Database password")
 	addCmd.Flags().String("database", "", "Database name")
-
-	// addCmd.MarkFlagRequired("name")
-	// addCmd.MarkFlagRequired("host")
-	// addCmd.MarkFlagRequired("port")
-	// addCmd.MarkFlagRequired("user")
-	// addCmd.MarkFlagRequired("password")
-	// addCmd.MarkFlagRequired("database")
 
 	addCmd.Flags().BoolP("help", "h", false, "help for add")
 	addCmd.Flags().MarkHidden("help")
