@@ -35,11 +35,28 @@ type addModel struct {
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode cursor.Mode
+	errors []string
 }
+
+func validateNotEmpty(value string) error {
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("field cannot be empty")
+	}
+	return nil
+}
+
+func validatePort(value string) error {
+	port, err := strconv.Atoi(value)
+	if err != nil || port <= 0 || port > 65535 {
+		return fmt.Errorf("invalid port number")
+	}
+	return nil
+}
+
 
 func initialModel() addModel {
 	m := addModel{
-		inputs: make([]textinput.Model, 6  ),
+		inputs: make([]textinput.Model, 6),
 	}
 
 	var t textinput.Model
@@ -52,23 +69,27 @@ func initialModel() addModel {
 		case 0:
 			t.Placeholder = "Config name"
 			t.Focus()
+			t.Validate = validateNotEmpty
 		case 1:
 			t.Placeholder = "Host"
 			t.CharLimit = 64
-
+			t.Validate = validateNotEmpty
 		case 2:
 			t.Placeholder = "Port"
 			t.CharLimit = 64
-
+			t.Validate = validatePort
 		case 3:
 			t.Placeholder = "User"
 			t.CharLimit = 64
+			t.Validate = validateNotEmpty
 		case 4:
 			t.Placeholder = "Password"
 			t.EchoMode = textinput.EchoPassword
 			t.EchoCharacter = '•'
+			t.Validate = validateNotEmpty
 		case 5:
 			t.Placeholder = "Database"
+			t.Validate = validateNotEmpty
 		}
 
 		m.inputs[i] = t
@@ -196,7 +217,20 @@ var addCmd = &cobra.Command{
 		}
 		
 		m := result.(addModel)
-		
+		var validationErrors []string
+
+		for _, input := range m.inputs {
+			if err := input.Validate(input.Value()); err != nil {
+				validationErrors = append(validationErrors, err.Error())
+			}
+		}
+
+		if len(validationErrors) > 0 {
+			fmt.Println("Validation errors:")
+			for index, vErr := range validationErrors {
+				fmt.Printf("%d: %s\n", index + 1, vErr)
+			}
+		}
 
 		name := m.inputs[0].Value()
 		host := m.inputs[1].Value()
@@ -218,7 +252,7 @@ var addCmd = &cobra.Command{
 			Password: password,
 			Database: database,
 		}
-		
+
 		configs = append(configs, config)
 		if err := saveConfigs(configs, configFile); err != nil {
 			fmt.Printf("Failed to save configuration: %v\n", err)

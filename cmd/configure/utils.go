@@ -88,3 +88,12 @@ func saveConfigs(configs []DBConfig, file string) error {
 
 	return os.WriteFile(file, data, 0644)
 }
+
+func containsErrors(errors []string) bool {
+	for _, err := range errors {
+		if err != "" {
+			return true
+		}
+	}
+	return false
+}
