@@ -29,7 +29,7 @@ var removeCmd = &cobra.Command{
 
 		if finalModel.(model).choice != nil {
 			choice := finalModel.(model).choice
-			fmt.Printf("Deleted configuration: %s\n", choice.Name)
+			fmt.Printf("Deleted configuration: %s\n", choice.ConfigName)
 
 			err := loadDefaultConfig()
 			if err != nil {

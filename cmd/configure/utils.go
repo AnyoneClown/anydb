@@ -14,18 +14,26 @@ import (
 )
 
 type DBConfig struct {
-	Name     string `yaml:"name"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Database string `yaml:"database"`
+	ConfigName string `yaml:"configName"`
+	Driver     string `yaml:"driver"`
+	Host       string `yaml:"host"`
+	Port       int    `yaml:"port"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	Database   string `yaml:"database"`
 }
 
 var configs []DBConfig
 var configFile string
 var defaultConfigFile string
 var defaultConfigData DBConfig
+
+var supportedDrivers = [4]string{
+	"postgres",
+	"mysql",
+	"sqlite",
+	"mssql",
+}
 
 func createFileAndDir() error {
 	homeDir, _ := os.UserHomeDir()

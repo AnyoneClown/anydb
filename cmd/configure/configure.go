@@ -24,7 +24,7 @@ var ConfigureCmd = &cobra.Command{
 
 		if finalModel.(model).choice != nil {
 			choice := finalModel.(model).choice
-			fmt.Printf("Selected configuration: %s\n", choice.Name)
+			fmt.Printf("Selected configuration: %s\n", choice.ConfigName)
 
 			data, err := yaml.Marshal(choice)
 			if err != nil {

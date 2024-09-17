@@ -1,6 +1,7 @@
 package configure
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -48,10 +49,20 @@ func validatePort(value string) error {
 	return nil
 }
 
+func validateDatabaseDriver(value string) error {
+	value = strings.ToLower(value)
+	for _, driver := range supportedDrivers {
+		if value == driver {
+			return nil
+		}
+	}
+	return errors.New("supported drivers: postgres, mysql, sqlite, mssql")
+}
+
 func initialModel() addModel {
 	m := addModel{
-		inputs: make([]textinput.Model, 6),
-		errors: make([]string, 6),
+		inputs: make([]textinput.Model, 7),
+		errors: make([]string, 7),
 	}
 
 	var t textinput.Model
@@ -85,6 +96,10 @@ func initialModel() addModel {
 		case 5:
 			t.Placeholder = "Database"
 			t.Validate = validateNotEmpty
+		case 6:
+			t.Placeholder = "Database driver"
+			t.Focus()
+			t.Validate = validateDatabaseDriver
 		}
 
 		m.inputs[i] = t
@@ -231,12 +246,13 @@ var addCmd = &cobra.Command{
 			}
 		}
 
-		name := m.inputs[0].Value()
+		configName := m.inputs[0].Value()
 		host := m.inputs[1].Value()
 		port := m.inputs[2].Value()
 		user := m.inputs[3].Value()
 		password := m.inputs[4].Value()
 		database := m.inputs[5].Value()
+		databaseDriver := m.inputs[6].Value()
 
 		portInt, err := strconv.Atoi(port)
 		if err != nil {
@@ -245,12 +261,13 @@ var addCmd = &cobra.Command{
 		}
 
 		config := DBConfig{
-			Name:     name,
-			Host:     host,
-			Port:     portInt,
-			User:     user,
-			Password: password,
-			Database: database,
+			ConfigName: configName,
+			Driver:     databaseDriver,
+			Host:       host,
+			Port:       portInt,
+			User:       user,
+			Password:   password,
+			Database:   database,
 		}
 
 		configs = append(configs, config)

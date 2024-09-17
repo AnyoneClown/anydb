@@ -14,11 +14,11 @@ type item struct {
 	dbConfig DBConfig
 }
 
-func (i item) Title() string { return i.dbConfig.Name }
+func (i item) Title() string { return i.dbConfig.ConfigName }
 func (i item) Description() string {
-	return fmt.Sprintf("%s@%s:%s", i.dbConfig.Name, i.dbConfig.Host, i.dbConfig.Database)
+	return fmt.Sprintf("%s@%s:%s", i.dbConfig.Driver, i.dbConfig.Host, i.dbConfig.Database)
 }
-func (i item) FilterValue() string { return i.dbConfig.Name }
+func (i item) FilterValue() string { return i.dbConfig.ConfigName }
 
 type model struct {
 	list      list.Model
