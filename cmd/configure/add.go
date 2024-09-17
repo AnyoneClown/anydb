@@ -56,7 +56,8 @@ func validateDatabaseDriver(value string) error {
 			return nil
 		}
 	}
-	return errors.New("supported drivers: postgres, mysql, sqlite, mssql")
+	errorMessage := fmt.Sprintf("Supported drivers: %s", strings.Join(supportedDrivers, ", "))
+	return errors.New(errorMessage)
 }
 
 func initialModel() addModel {
@@ -98,7 +99,6 @@ func initialModel() addModel {
 			t.Validate = validateNotEmpty
 		case 6:
 			t.Placeholder = "Database driver"
-			t.Focus()
 			t.Validate = validateDatabaseDriver
 		}
 

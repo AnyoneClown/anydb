@@ -28,11 +28,10 @@ var configFile string
 var defaultConfigFile string
 var defaultConfigData DBConfig
 
-var supportedDrivers = [4]string{
+var supportedDrivers = []string{
 	"postgres",
-	"mysql",
 	"sqlite",
-	"mssql",
+	"cockroachdb",
 }
 
 func createFileAndDir() error {
