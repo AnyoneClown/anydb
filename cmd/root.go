@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/AnyoneClown/anydb/cmd/configure"
+	"github.com/AnyoneClown/anydb/cmd/last"
 	"github.com/spf13/cobra"
 )
 
@@ -27,4 +28,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(configure.ConfigureCmd)
+	rootCmd.AddCommand(last.LastCmd)
 }
