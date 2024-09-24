@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AnyoneClown/anydb/utils"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
@@ -31,26 +32,26 @@ var removeCmd = &cobra.Command{
 			choice := finalModel.(model).choice
 			fmt.Printf("Deleted configuration: %s\n", choice.ConfigName)
 
-			err := loadDefaultConfig()
+			err := utils.LoadDefaultConfig()
 			if err != nil {
 				return
 			}
 
-			if *choice == defaultConfigData {
-				err = os.Truncate(defaultConfigFile, 0)
+			if *choice == utils.DefaultConfigData {
+				err = os.Truncate(utils.DefaultConfigFile, 0)
 				if err != nil {
 					fmt.Printf("Error truncating file: %v\n", err)
 					return
 				}
 			}
 
-			for index, value := range configs {
+			for index, value := range utils.Configs {
 				if value == *choice {
-					configs = append(configs[:index], configs[index+1:]...)
+					utils.Configs = append(utils.Configs[:index], utils.Configs[index+1:]...)
 				}
 			}
 
-			if err := saveConfigs(configs, configFile); err != nil {
+			if err := utils.SaveConfigs(utils.Configs, utils.ConfigFile); err != nil {
 				fmt.Printf("Failed to save configuration: %v\n", err)
 			}
 		}

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/AnyoneClown/anydb/utils"
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -51,12 +52,12 @@ func validatePort(value string) error {
 
 func validateDatabaseDriver(value string) error {
 	value = strings.ToLower(value)
-	for _, driver := range supportedDrivers {
+	for _, driver := range utils.SupportedDrivers {
 		if value == driver {
 			return nil
 		}
 	}
-	errorMessage := fmt.Sprintf("Supported drivers: %s", strings.Join(supportedDrivers, ", "))
+	errorMessage := fmt.Sprintf("Supported drivers: %s", strings.Join(utils.SupportedDrivers, ", "))
 	return errors.New(errorMessage)
 }
 
@@ -260,7 +261,7 @@ var addCmd = &cobra.Command{
 			return
 		}
 
-		config := DBConfig{
+		config := utils.DBConfig{
 			ConfigName: configName,
 			Driver:     databaseDriver,
 			Host:       host,
@@ -270,8 +271,8 @@ var addCmd = &cobra.Command{
 			Database:   database,
 		}
 
-		configs = append(configs, config)
-		if err := saveConfigs(configs, configFile); err != nil {
+		utils.Configs = append(utils.Configs, config)
+		if err := utils.SaveConfigs(utils.Configs, utils.ConfigFile); err != nil {
 			fmt.Printf("Failed to save configuration: %v\n", err)
 		} else {
 			fmt.Println("Configuration saved successfully.")
