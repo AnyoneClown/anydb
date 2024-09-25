@@ -8,23 +8,47 @@ package table
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/AnyoneClown/anydb/utils"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/cobra"
+
+	_ "github.com/lib/pq"
 )
 
 var TableCmd = &cobra.Command{
 	Use:   "table",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Display tables and their contents",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("table called")
+		limit, _ := cmd.Flags().GetInt("rows")
+
+		dsn, err := utils.GetDBString()
+		if err != nil {
+			fmt.Println("Error getting database string:", err)
+			os.Exit(1)
+		}
+
+		db, err := sqlx.Connect("postgres", dsn)
+		if err != nil {
+			fmt.Println("Error connecting to database:", err)
+			os.Exit(1)
+		}
+		defer db.Close()
+
+		model, err := NewModel(db, limit)
+		if err != nil {
+			fmt.Println("Error initializing model:", err)
+			os.Exit(1)
+		}
+		if _, err := tea.NewProgram(model).Run(); err != nil {
+			fmt.Println("Error running program:", err)
+			os.Exit(1)
+		}
 	},
 }
 
 func init() {
+	TableCmd.Flags().IntP("rows", "r", 5, "Number of rows to display")
 }
