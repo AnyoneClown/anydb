@@ -2,6 +2,7 @@ package last
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,7 +18,7 @@ type model struct {
 	table table.Model
 }
 
-func getLastFiveRecords(db *sqlx.DB, tableName string, limit int) ([]map[string]interface{}, error) {
+func getLastRecords(db *sqlx.DB, tableName string, limit int) ([]map[string]interface{}, error) {
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY id DESC LIMIT %d", tableName, limit)
 	rows, err := db.Queryx(query)
 	if err != nil {
@@ -25,40 +26,48 @@ func getLastFiveRecords(db *sqlx.DB, tableName string, limit int) ([]map[string]
 	}
 	defer rows.Close()
 
-	var results []map[string]interface{}
+	results := make([]map[string]interface{}, 0, limit)
 	for rows.Next() {
 		result := make(map[string]interface{})
-		err := rows.MapScan(result)
-		if err != nil {
+		if err := rows.MapScan(result); err != nil {
 			return nil, err
 		}
 		results = append(results, result)
 	}
 
-	return results, nil
+	return results, rows.Err()
+}
+
+func getTableColumns(db *sqlx.DB, tableName string) ([]table.Column, error) {
+	query := "SELECT column_name FROM information_schema.columns WHERE table_name = $1"
+	var columnNames []string
+	if err := db.Select(&columnNames, query, tableName); err != nil {
+		return nil, err
+	}
+
+	columns := make([]table.Column, len(columnNames))
+	for i, name := range columnNames {
+		columns[i] = table.Column{Title: name, Width: 20}
+	}
+
+	return columns, nil
 }
 
 func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
-			if m.table.Focused() {
-				m.table.Blur()
-			} else {
-				m.table.Focus()
-			}
+			m.table.Focus()
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			return m, tea.Batch(
-				tea.Printf("Let's go to %s!", m.table.SelectedRow()[1]),
-			)
+			return m, tea.Printf("Let's go to %s!", m.table.SelectedRow()[1])
 		}
 	}
+	var cmd tea.Cmd
 	m.table, cmd = m.table.Update(msg)
 	return m, cmd
 }
@@ -68,41 +77,23 @@ func (m model) View() string {
 }
 
 func initializeModel(db *sqlx.DB, tableName string, limit int) (model, error) {
-	columns := []table.Column{
-		{Title: "ID", Width: 5},
-		{Title: "Email", Width: 25},
-		{Title: "Picture", Width: 10},
-		{Title: "Updated At", Width: 20},
-		{Title: "Is Admin", Width: 10},
-		{Title: "Deleted At", Width: 20},
-		{Title: "Password", Width: 60},
-		{Title: "Google ID", Width: 10},
-		{Title: "Provider", Width: 10},
-		{Title: "Verified Email", Width: 15},
-		{Title: "Created At", Width: 20},
-	}
-
-	records, err := getLastFiveRecords(db, tableName, limit)
+	columns, err := getTableColumns(db, tableName)
 	if err != nil {
 		return model{}, err
 	}
 
-	var rows []table.Row
-	for _, record := range records {
-		row := table.Row{
-			fmt.Sprintf("%v", record["id"]),
-			fmt.Sprintf("%v", record["email"]),
-			fmt.Sprintf("%v", record["picture"]),
-			fmt.Sprintf("%v", record["updated_at"]),
-			fmt.Sprintf("%v", record["is_admin"]),
-			fmt.Sprintf("%v", record["deleted_at"]),
-			fmt.Sprintf("%v", record["password"]),
-			fmt.Sprintf("%v", record["google_id"]),
-			fmt.Sprintf("%v", record["provider"]),
-			fmt.Sprintf("%v", record["verified_email"]),
-			fmt.Sprintf("%v", record["created_at"]),
+	records, err := getLastRecords(db, tableName, limit)
+	if err != nil {
+		return model{}, err
+	}
+
+	rows := make([]table.Row, len(records))
+	for i, record := range records {
+		row := make(table.Row, len(columns))
+		for j, column := range columns {
+			row[j] = fmt.Sprintf("%v", record[strings.ToLower(column.Title)])
 		}
-		rows = append(rows, row)
+		rows[i] = row
 	}
 
 	t := table.New(

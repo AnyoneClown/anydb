@@ -26,7 +26,3 @@ var SupportedDrivers = []string{
 	"sqlite",
 	"cockroachdb",
 }
-
-func getDBString() (string, error) {
-	return "", nil
-}
