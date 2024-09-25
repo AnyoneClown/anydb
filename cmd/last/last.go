@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AnyoneClown/anydb/utils"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -24,7 +25,10 @@ var LastCmd = &cobra.Command{
 		tableName := args[0]
 		rows, _ := cmd.Flags().GetInt("rows")
 
-		dsn := "postgresql://postgres:AA6tgixbKoCkb61S0cUtuA@anyone-9715.7tc.aws-eu-central-1.cockroachlabs.cloud:26257/CocaCallsAPI?sslmode=verify-full"
+		dsn, err := utils.GetDBString()
+		if err != nil {
+			return
+		}
 
 		db, err := sqlx.Connect("postgres", dsn)
 		if err != nil {

@@ -7,13 +7,13 @@ master my life.
 package utils
 
 type DBConfig struct {
-    ConfigName string `yaml:"configName"`
-    Driver     string `yaml:"driver"`
-    Host       string `yaml:"host"`
-    Port       int    `yaml:"port"`
-    User       string `yaml:"user"`
-    Password   string `yaml:"password"`
-    Database   string `yaml:"database"`
+	ConfigName string `yaml:"configName"`
+	Driver     string `yaml:"driver"`
+	Host       string `yaml:"host"`
+	Port       int    `yaml:"port"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	Database   string `yaml:"database"`
 }
 
 var Configs []DBConfig
@@ -22,12 +22,11 @@ var DefaultConfigFile string
 var DefaultConfigData DBConfig
 
 var SupportedDrivers = []string{
-    "postgres",
-    "sqlite",
-    "cockroachdb",
+	"postgres",
+	"sqlite",
+	"cockroachdb",
 }
 
 func getDBString() (string, error) {
 	return "", nil
 }
-
