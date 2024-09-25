@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/AnyoneClown/anydb/utils"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -62,15 +63,8 @@ func (m model) View() string {
 	return baseStyle.Render(m.table.View()) + "\n  " + m.table.HelpView() + "\n"
 }
 
-func getTables(db *sqlx.DB) ([]string, error) {
-	query := "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-	var tables []string
-	err := db.Select(&tables, query)
-	return tables, err
-}
-
 func initializeTableList(db *sqlx.DB) (table.Model, error) {
-	tables, err := getTables(db)
+	tables, err := utils.GetTables(db)
 	if err != nil {
 		return table.Model{}, err
 	}
@@ -107,12 +101,12 @@ func initializeTableList(db *sqlx.DB) (table.Model, error) {
 }
 
 func initializeTableData(db *sqlx.DB, tableName string, limit int) (table.Model, error) {
-	columns, err := getTableColumns(db, tableName)
+	columns, err := utils.GetTableColumns(db, tableName)
 	if err != nil {
 		return table.Model{}, err
 	}
 
-	records, err := getLastRecords(db, tableName, limit)
+	records, err := utils.GetLastRecords(db, tableName, limit)
 	if err != nil {
 		return table.Model{}, err
 	}
@@ -163,37 +157,3 @@ func NewModel(db *sqlx.DB, limit int) (model, error) {
 	}, nil
 }
 
-func getLastRecords(db *sqlx.DB, tableName string, limit int) ([]map[string]interface{}, error) {
-	query := fmt.Sprintf("SELECT * FROM %s ORDER BY id DESC LIMIT %d", tableName, limit)
-	rows, err := db.Queryx(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	results := make([]map[string]interface{}, 0, limit)
-	for rows.Next() {
-		result := make(map[string]interface{})
-		if err := rows.MapScan(result); err != nil {
-			return nil, err
-		}
-		results = append(results, result)
-	}
-
-	return results, rows.Err()
-}
-
-func getTableColumns(db *sqlx.DB, tableName string) ([]table.Column, error) {
-	query := "SELECT column_name FROM information_schema.columns WHERE table_name = $1"
-	var columnNames []string
-	if err := db.Select(&columnNames, query, tableName); err != nil {
-		return nil, err
-	}
-
-	columns := make([]table.Column, len(columnNames))
-	for i, name := range columnNames {
-		columns[i] = table.Column{Title: name, Width: 20}
-	}
-
-	return columns, nil
-}

@@ -8,7 +8,6 @@ package table
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/AnyoneClown/anydb/utils"
 	tea "github.com/charmbracelet/bubbletea"
@@ -27,24 +26,24 @@ var TableCmd = &cobra.Command{
 		dsn, err := utils.GetDBString()
 		if err != nil {
 			fmt.Println("Error getting database string:", err)
-			os.Exit(1)
+			return
 		}
 
 		db, err := sqlx.Connect("postgres", dsn)
 		if err != nil {
 			fmt.Println("Error connecting to database:", err)
-			os.Exit(1)
+			return
 		}
 		defer db.Close()
 
 		model, err := NewModel(db, limit)
 		if err != nil {
 			fmt.Println("Error initializing model:", err)
-			os.Exit(1)
+			return
 		}
 		if _, err := tea.NewProgram(model).Run(); err != nil {
 			fmt.Println("Error running program:", err)
-			os.Exit(1)
+			return
 		}
 	},
 }
