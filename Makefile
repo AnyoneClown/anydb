@@ -11,3 +11,8 @@ help:
 tidy:
 	go mod tidy -v
 	go fmt ./...
+
+## clean: Clean realease folder
+.PHONY: clean
+clean:
+	rm -rf dist
