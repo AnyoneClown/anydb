@@ -19,6 +19,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var (
@@ -224,9 +225,9 @@ func (m addModel) View() string {
 	}
 	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
 
-	b.WriteString(helpStyle.Render("cursor mode is "))
+	b.WriteString(cursorModeHelpStyle.Render("cursor mode is "))
 	b.WriteString(cursorModeHelpStyle.Render(m.cursorMode.String()))
-	b.WriteString(helpStyle.Render(" (ctrl+r to change style)"))
+	b.WriteString(cursorModeHelpStyle.Render(" (ctrl+r to change style)"))
 
 	return b.String()
 }
@@ -241,7 +242,7 @@ var addCmd = &cobra.Command{
 		addStart := tea.NewProgram(m)
 		result, err := addStart.Run()
 		if err != nil {
-			fmt.Printf("could not start program: %s\n", err)
+			utils.Log.Error("Could not start program", zap.Error(err))
 			os.Exit(1)
 		}
 
@@ -261,11 +262,7 @@ var addCmd = &cobra.Command{
 		database := m.inputs[5].Value()
 		databaseDriver := m.inputs[6].Value()
 
-		portInt, err := strconv.Atoi(port)
-		if err != nil {
-			fmt.Printf("Invalid port number: %s\n", err)
-			return
-		}
+		portInt, _ := strconv.Atoi(port)
 
 		config := utils.DBConfig{
 			ConfigName: configName,
@@ -279,7 +276,7 @@ var addCmd = &cobra.Command{
 
 		utils.Configs = append(utils.Configs, config)
 		if err := utils.SaveConfigs(utils.Configs, utils.ConfigFile); err != nil {
-			fmt.Printf("Failed to save configuration: %v\n", err)
+			utils.Log.Error("Failed to save configuration", zap.Error(err))
 		} else {
 			fmt.Println("Configuration saved successfully.")
 		}

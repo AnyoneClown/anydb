@@ -11,6 +11,7 @@ import (
 
 	"github.com/AnyoneClown/anydb/cmd/configure"
 	"github.com/AnyoneClown/anydb/cmd/table"
+	"github.com/AnyoneClown/anydb/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +28,9 @@ func Execute() {
 }
 
 func init() {
+	utils.InitLogger() // Register Zap logger
+	defer utils.Log.Sync()
+
 	rootCmd.AddCommand(configure.ConfigureCmd)
 	rootCmd.AddCommand(table.TableCmd)
 }

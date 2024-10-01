@@ -11,6 +11,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
 func GetDBString() (string, error) {
@@ -40,6 +41,7 @@ func GetLastRecords(db *sqlx.DB, tableName string, limit int) ([]map[string]inte
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY id DESC LIMIT %d", tableName, limit)
 	rows, err := db.Queryx(query)
 	if err != nil {
+		Log.Error("Failed to execute query", zap.String("query", query), zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -48,18 +50,24 @@ func GetLastRecords(db *sqlx.DB, tableName string, limit int) ([]map[string]inte
 	for rows.Next() {
 		result := make(map[string]interface{})
 		if err := rows.MapScan(result); err != nil {
+			Log.Error("Failed to scan row", zap.Error(err))
 			return nil, err
 		}
 		results = append(results, result)
 	}
 
-	return results, rows.Err()
+	if err := rows.Err(); err != nil {
+		Log.Error("Rows iteration error", zap.Error(err))
+		return nil, err
+	}
+	return results, nil
 }
 
 func GetTableColumns(db *sqlx.DB, tableName string) ([]table.Column, error) {
 	query := "SELECT column_name FROM information_schema.columns WHERE table_name = $1"
 	var columnNames []string
 	if err := db.Select(&columnNames, query, tableName); err != nil {
+		Log.Error("Failed to get table columns", zap.String("table", tableName), zap.Error(err))
 		return nil, err
 	}
 
@@ -75,5 +83,10 @@ func GetTables(db *sqlx.DB) ([]string, error) {
 	query := "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
 	var tables []string
 	err := db.Select(&tables, query)
-	return tables, err
+	if err != nil {
+		Log.Error("Failed to get tables", zap.Error(err))
+		return nil, err
+	}
+
+	return tables, nil
 }

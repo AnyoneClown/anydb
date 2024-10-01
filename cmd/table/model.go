@@ -16,6 +16,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/jmoiron/sqlx"
+	"go.uber.org/zap"
 )
 
 var baseStyle = lipgloss.NewStyle().
@@ -69,6 +70,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				var err error
 				m.table, err = initializeTableData(m.db, m.chosenTable, m.limit)
 				if err != nil {
+					utils.Log.Error("Failed to initialize table data", zap.Error(err))
 					return m, tea.Quit
 				}
 			}

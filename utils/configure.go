@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,6 +24,7 @@ func CreateFileAndDir() error {
 	if _, err := os.Stat(configDir); os.IsNotExist(err) {
 		err = os.Mkdir(configDir, os.ModePerm)
 		if err != nil {
+			Log.Error("Failed to create configDir", zap.String("configDir", configDir), zap.Error(err))
 			return err
 		}
 	}
@@ -31,6 +33,7 @@ func CreateFileAndDir() error {
 	if _, err := os.Stat(ConfigFile); os.IsNotExist(err) {
 		file, err := os.Create(ConfigFile)
 		if err != nil {
+			Log.Error("Failed to create ConfigFile", zap.String("ConfigFile", ConfigFile), zap.Error(err))
 			return err
 		}
 		file.Close()
@@ -40,6 +43,7 @@ func CreateFileAndDir() error {
 	if _, err := os.Stat(DefaultConfigFile); os.IsNotExist(err) {
 		file, err := os.Create(DefaultConfigFile)
 		if err != nil {
+			Log.Error("Failed to create DefaultConfigFile", zap.String("DefaultConfigFile", DefaultConfigFile), zap.Error(err))
 			return err
 		}
 		file.Close()
@@ -56,11 +60,13 @@ func LoadConfigs(file string) ([]DBConfig, error) {
 		if os.IsNotExist(err) {
 			return configs, nil
 		}
+		Log.Error("Failed to read configuration file", zap.Error(err))
 		return nil, err
 	}
 
 	err = yaml.Unmarshal(data, &configs)
 	if err != nil {
+		Log.Error("Failed to unmarshal configuration data", zap.Error(err))
 		return nil, err
 	}
 
@@ -70,21 +76,31 @@ func LoadConfigs(file string) ([]DBConfig, error) {
 func SaveConfigs(configs []DBConfig, file string) error {
 	data, err := yaml.Marshal(configs)
 	if err != nil {
+		Log.Error("Failed to marshal configuration data", zap.Error(err))
 		return err
 	}
 
-	return os.WriteFile(file, data, 0644)
+	err = os.WriteFile(file, data, 0644)
+	if err != nil {
+		Log.Error("Failed to write configuration file", zap.Error(err))
+		return err
+	}
+
+	return nil
 }
 
 func LoadDefaultConfig() error {
 	data, err := os.ReadFile(DefaultConfigFile)
 	if err != nil {
+		Log.Error("Failed to read default configuration file", zap.Error(err))
 		return err
 	}
 
 	err = yaml.Unmarshal(data, &DefaultConfigData)
 	if err != nil {
+		Log.Error("Failed to unmarshal default configuration data", zap.Error(err))
 		return err
 	}
+
 	return nil
 }

@@ -7,12 +7,11 @@ master my life.
 package table
 
 import (
-	"fmt"
-
 	"github.com/AnyoneClown/anydb/utils"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	_ "github.com/lib/pq"
 )
@@ -25,24 +24,24 @@ var TableCmd = &cobra.Command{
 
 		dsn, err := utils.GetDBString()
 		if err != nil {
-			fmt.Println("Error getting database string:", err)
+			utils.Log.Error("Error getting database string:", zap.Error(err))
 			return
 		}
 
 		db, err := sqlx.Connect("postgres", dsn)
 		if err != nil {
-			fmt.Println("Error connecting to database:", err)
+			utils.Log.Error("Error connecting to database:", zap.Error(err))
 			return
 		}
 		defer db.Close()
 
 		model, err := NewModel(db, limit)
 		if err != nil {
-			fmt.Println("Error initializing model:", err)
+			utils.Log.Error("Error initializing model:", zap.Error(err))
 			return
 		}
 		if _, err := tea.NewProgram(model).Run(); err != nil {
-			fmt.Println("Error running program:", err)
+			utils.Log.Error("Error running program:", zap.Error(err))
 			return
 		}
 	},

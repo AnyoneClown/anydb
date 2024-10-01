@@ -8,8 +8,11 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.8.1
+	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+require go.uber.org/multierr v1.10.0 // indirect
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
