@@ -14,6 +14,11 @@ import (
 	"go.uber.org/zap"
 )
 
+type TableContent struct {
+    TableName string
+    RowsCount int
+}
+
 func GetDBString() (string, error) {
 	err := LoadDefaultConfig()
 	if err != nil {
@@ -79,13 +84,24 @@ func GetTableColumns(db *sqlx.DB, tableName string) ([]table.Column, error) {
 	return columns, nil
 }
 
-func GetTables(db *sqlx.DB) ([]string, error) {
-	query := "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-	var tables []string
-	err := db.Select(&tables, query)
+func GetTables(db *sqlx.DB) ([]TableContent, error) {
+	var tableNames []string
+	var tables []TableContent
+	var rows int
+	tableNamesQuery := "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+
+	err := db.Select(&tableNames, tableNamesQuery)
 	if err != nil {
-		Log.Error("Failed to get tables", zap.Error(err))
 		return nil, err
+	}
+	
+	for _, tableName := range tableNames {
+		rowsCountQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s", tableName)
+		err := db.QueryRow(rowsCountQuery).Scan(&rows)
+		if err != nil {
+			return nil, err
+		}
+		tables = append(tables, TableContent{TableName: tableName, RowsCount: rows})
 	}
 
 	return tables, nil

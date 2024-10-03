@@ -32,14 +32,17 @@ type model struct {
 	tableChosen bool
 	chosenTable string
 	limit       int
+	width       int
+	height      int
 }
 
 type Item struct {
 	TableName string
+	RowsCount int
 }
 
 func (i Item) Title() string       { return i.TableName }
-func (i Item) Description() string { return i.TableName }
+func (i Item) Description() string { return fmt.Sprintf("Rows: %d", i.RowsCount) }
 func (i Item) FilterValue() string { return i.TableName }
 
 func (m model) Init() tea.Cmd { return nil }
@@ -48,18 +51,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
+		m.width = msg.Width-h
+		m.height = msg.Height-v
+		m.list.SetSize(m.width, m.height)
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
+		case "tab":
 			if m.tableChosen {
 				m.tableChosen = false
-				var err error
-				m.list, err = initializeTableList(m.db)
-				if err != nil {
-					return m, tea.Quit
-				}
+				m.list.SetSize(m.width, m.height)
 			}
 		case "q", "ctrl+c":
 			return m, tea.Quit
@@ -96,12 +97,13 @@ func (m model) View() string {
 func initializeTableList(db *sqlx.DB) (list.Model, error) {
 	tables, err := utils.GetTables(db)
 	if err != nil {
+		utils.Log.Error("Failed retrieve tables", zap.Error(err))
 		return list.Model{}, err
 	}
 
 	items := make([]list.Item, len(tables))
 	for i, table := range tables {
-		items[i] = Item{TableName: table}
+		items[i] = Item{TableName: table.TableName, RowsCount: table.RowsCount}
 	}
 
 	delegate := list.NewDefaultDelegate()
@@ -174,6 +176,8 @@ func NewModel(db *sqlx.DB, limit int) (model, error) {
 		tableChosen: false,
 		chosenTable: "",
 		limit:       limit,
+		width:       0,
+		height:      0,
 	}
 
 	return m, nil
