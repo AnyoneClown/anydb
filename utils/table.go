@@ -15,8 +15,8 @@ import (
 )
 
 type TableContent struct {
-    TableName string
-    RowsCount int
+	TableName string
+	RowsCount int
 }
 
 func GetDBString() (string, error) {
@@ -94,7 +94,7 @@ func GetTables(db *sqlx.DB) ([]TableContent, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	for _, tableName := range tableNames {
 		rowsCountQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s", tableName)
 		err := db.QueryRow(rowsCountQuery).Scan(&rows)

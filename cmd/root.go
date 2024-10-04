@@ -9,6 +9,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/AnyoneClown/anydb/cmd/backup"
 	"github.com/AnyoneClown/anydb/cmd/configure"
 	"github.com/AnyoneClown/anydb/cmd/table"
 	"github.com/AnyoneClown/anydb/utils"
@@ -33,4 +34,5 @@ func init() {
 
 	rootCmd.AddCommand(configure.ConfigureCmd)
 	rootCmd.AddCommand(table.TableCmd)
+	rootCmd.AddCommand(backup.BackupCmd)
 }
