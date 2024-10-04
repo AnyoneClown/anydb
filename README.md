@@ -25,7 +25,7 @@ go install github.com/AnyoneClown/anydb@latest
 2. Extract the downloaded archive:
 
     ```sh
-    tar -xzf anydb-linux-amd64.tar.gz
+    tar -xzf anydb_Linux_x86_64.tar.gz
     ```
 
 3. Move the binary to `/usr/local/bin`:
