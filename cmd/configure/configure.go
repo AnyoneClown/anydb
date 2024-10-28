@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AnyoneClown/anydb/config"
 	"github.com/AnyoneClown/anydb/utils"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -37,7 +38,7 @@ var ConfigureCmd = &cobra.Command{
 			if err != nil {
 				return
 			}
-			os.WriteFile(utils.DefaultConfigFile, data, 0644)
+			os.WriteFile(config.DefaultConfigFile, data, 0644)
 		}
 	},
 }
@@ -46,7 +47,7 @@ func init() {
 	utils.CreateFileAndDir()
 
 	var err error
-	utils.Configs, err = utils.LoadConfigs(utils.ConfigFile)
+	config.Configs, err = utils.LoadConfigs(config.ConfigFile)
 	if err != nil {
 		fmt.Println("File doesn't exist, creating configuration file")
 	}

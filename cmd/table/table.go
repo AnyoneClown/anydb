@@ -7,6 +7,8 @@ master my life.
 package table
 
 import (
+	"fmt"
+
 	"github.com/AnyoneClown/anydb/utils"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jmoiron/sqlx"
@@ -31,6 +33,7 @@ var TableCmd = &cobra.Command{
 		db, err := sqlx.Connect("postgres", dsn)
 		if err != nil {
 			utils.Log.Error("Error connecting to database:", zap.Error(err))
+			fmt.Printf(dsn)
 			return
 		}
 		defer db.Close()

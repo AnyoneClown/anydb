@@ -4,7 +4,7 @@ This is my license. There are many like it, but this one is mine.
 My license is my best friend. It is my life. I must master it as I must
 master my life.
 */
-package utils
+package config
 
 type DBConfig struct {
 	ConfigName string `yaml:"configName"`
@@ -23,6 +23,5 @@ var DefaultConfigData DBConfig
 
 var SupportedDrivers = []string{
 	"postgres",
-	"sqlite",
 	"cockroachdb",
 }

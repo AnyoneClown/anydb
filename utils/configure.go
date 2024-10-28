@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/AnyoneClown/anydb/config"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
@@ -17,8 +18,8 @@ import (
 func CreateFileAndDir() error {
 	homeDir, _ := os.UserHomeDir()
 	configDir := filepath.Join(homeDir, ".anydb")
-	ConfigFile = filepath.Join(configDir, "anydb-config.yaml")
-	DefaultConfigFile = filepath.Join(configDir, "anydb-default-config.yaml")
+	config.ConfigFile = filepath.Join(configDir, "anydb-config.yaml")
+	config.DefaultConfigFile = filepath.Join(configDir, "anydb-default-config.yaml")
 
 	// Check if the directory exists, if not, create it
 	if _, err := os.Stat(configDir); os.IsNotExist(err) {
@@ -30,20 +31,20 @@ func CreateFileAndDir() error {
 	}
 
 	// Check if the config file exists, if not, create it
-	if _, err := os.Stat(ConfigFile); os.IsNotExist(err) {
-		file, err := os.Create(ConfigFile)
+	if _, err := os.Stat(config.ConfigFile); os.IsNotExist(err) {
+		file, err := os.Create(config.ConfigFile)
 		if err != nil {
-			Log.Error("Failed to create ConfigFile", zap.String("ConfigFile", ConfigFile), zap.Error(err))
+			Log.Error("Failed to create ConfigFile", zap.String("ConfigFile", config.ConfigFile), zap.Error(err))
 			return err
 		}
 		file.Close()
 	}
 
 	// Check if the default config file exists, if not, create it
-	if _, err := os.Stat(DefaultConfigFile); os.IsNotExist(err) {
-		file, err := os.Create(DefaultConfigFile)
+	if _, err := os.Stat(config.DefaultConfigFile); os.IsNotExist(err) {
+		file, err := os.Create(config.DefaultConfigFile)
 		if err != nil {
-			Log.Error("Failed to create DefaultConfigFile", zap.String("DefaultConfigFile", DefaultConfigFile), zap.Error(err))
+			Log.Error("Failed to create DefaultConfigFile", zap.String("DefaultConfigFile", config.DefaultConfigFile), zap.Error(err))
 			return err
 		}
 		file.Close()
@@ -52,8 +53,8 @@ func CreateFileAndDir() error {
 	return nil
 }
 
-func LoadConfigs(file string) ([]DBConfig, error) {
-	var configs []DBConfig
+func LoadConfigs(file string) ([]config.DBConfig, error) {
+	var configs []config.DBConfig
 
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -73,7 +74,7 @@ func LoadConfigs(file string) ([]DBConfig, error) {
 	return configs, nil
 }
 
-func SaveConfigs(configs []DBConfig, file string) error {
+func SaveConfigs(configs []config.DBConfig, file string) error {
 	data, err := yaml.Marshal(configs)
 	if err != nil {
 		Log.Error("Failed to marshal configuration data", zap.Error(err))
@@ -90,13 +91,13 @@ func SaveConfigs(configs []DBConfig, file string) error {
 }
 
 func LoadDefaultConfig() error {
-	data, err := os.ReadFile(DefaultConfigFile)
+	data, err := os.ReadFile(config.DefaultConfigFile)
 	if err != nil {
 		Log.Error("Failed to read default configuration file", zap.Error(err))
 		return err
 	}
 
-	err = yaml.Unmarshal(data, &DefaultConfigData)
+	err = yaml.Unmarshal(data, &config.DefaultConfigData)
 	if err != nil {
 		Log.Error("Failed to unmarshal default configuration data", zap.Error(err))
 		return err

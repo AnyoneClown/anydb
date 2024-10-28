@@ -9,7 +9,7 @@ package configure
 import (
 	"fmt"
 
-	"github.com/AnyoneClown/anydb/utils"
+	"github.com/AnyoneClown/anydb/config"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -18,7 +18,7 @@ import (
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
 type item struct {
-	dbConfig utils.DBConfig
+	dbConfig config.DBConfig
 }
 
 func (i item) Title() string { return i.dbConfig.ConfigName }
@@ -29,7 +29,7 @@ func (i item) FilterValue() string { return i.dbConfig.ConfigName }
 
 type model struct {
 	list      list.Model
-	choice    *utils.DBConfig
+	choice    *config.DBConfig
 	quitting  bool
 	noConfigs bool
 }
@@ -80,8 +80,8 @@ func (m model) View() string {
 }
 
 func newModel(title string) model {
-	items := make([]list.Item, len(utils.Configs)) // Create slice with configuration items
-	for i, config := range utils.Configs {
+	items := make([]list.Item, len(config.Configs)) // Create slice with configuration items
+	for i, config := range config.Configs {
 		items[i] = item{dbConfig: config}
 	}
 
@@ -91,7 +91,7 @@ func newModel(title string) model {
 
 	m := model{
 		list:      list.New(items, delegate, 0, 0),
-		noConfigs: len(utils.Configs) == 0,
+		noConfigs: len(config.Configs) == 0,
 	}
 	m.list.Title = title
 	m.list.SetShowStatusBar(true)

@@ -9,6 +9,7 @@ package utils
 import (
 	"fmt"
 
+	"github.com/AnyoneClown/anydb/config"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
@@ -26,18 +27,27 @@ func GetDBString() (string, error) {
 	}
 
 	var dsn string
-	switch DefaultConfigData.Driver {
-	case "postgres", "cockroachdb":
+	switch config.DefaultConfigData.Driver {
+	case "cockroachdb":
 		dsn = fmt.Sprintf(
 			"postgresql://%s:%s@%s:%d/%s?sslmode=verify-full",
-			DefaultConfigData.User,
-			DefaultConfigData.Password,
-			DefaultConfigData.Host,
-			DefaultConfigData.Port,
-			DefaultConfigData.Database,
+			config.DefaultConfigData.User,
+			config.DefaultConfigData.Password,
+			config.DefaultConfigData.Host,
+			config.DefaultConfigData.Port,
+			config.DefaultConfigData.Database,
+		)
+	case "postgres":
+		dsn = fmt.Sprintf(
+			"postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+			config.DefaultConfigData.User,
+			config.DefaultConfigData.Password,
+			config.DefaultConfigData.Host,
+			config.DefaultConfigData.Port,
+			config.DefaultConfigData.Database,
 		)
 	default:
-		return "", fmt.Errorf("unsupported database driver: %s", DefaultConfigData.Driver)
+		return "", fmt.Errorf("unsupported database driver: %s", config.DefaultConfigData.Driver)
 	}
 	return dsn, nil
 }
