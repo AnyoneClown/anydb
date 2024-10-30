@@ -12,8 +12,10 @@ import (
 	"github.com/AnyoneClown/anydb/cmd/backup"
 	"github.com/AnyoneClown/anydb/cmd/configure"
 	"github.com/AnyoneClown/anydb/cmd/table"
+	"github.com/AnyoneClown/anydb/config"
 	"github.com/AnyoneClown/anydb/utils"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var rootCmd = &cobra.Command{
@@ -31,6 +33,14 @@ func Execute() {
 func init() {
 	utils.InitLogger() // Register Zap logger
 	defer utils.Log.Sync()
+	
+	utils.CreateFileAndDir()
+
+	var err error
+	config.Configs, err = utils.LoadConfigs(config.ConfigFile)
+	if err != nil {
+		utils.Log.Error("File doesn't exist, creating configuration file", zap.Error(err))
+	}
 
 	rootCmd.AddCommand(configure.ConfigureCmd)
 	rootCmd.AddCommand(table.TableCmd)

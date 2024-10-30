@@ -1,0 +1,98 @@
+package templates
+
+import "github.com/AnyoneClown/anydb/config"
+
+templ DBConfigView(configs []config.DBConfig) {
+    <html>
+        <head>
+            <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <title>DB Configurations</title>
+        </head>
+        <style type="text/css">
+            tr.htmx-swapping td {
+                opacity: 0;
+                transition: opacity 1s ease-out;
+            }
+        </style>
+        <body>
+            <div class="min-h-screen bg-gray-900 flex flex-col items-center justify-start pt-10">
+                <div class="bg-gray-700 shadow rounded-lg p-6 text-gray-50">
+                    <h1 class="text-xl font-semibold mb-4 text-green-500">DB Configurations</h1>
+                    <p class="mb-6">Manage your database configurations below.</p>
+                    <form class="mb-4" hx-boost="true" hx-post="/dbconfig" hx-target="#configList" hx-on:submit="document.getElementById('configName').value=''">
+                        <label class="block text-sm font-medium mb-1" for="configName">
+                             Config Name
+                        </label>
+                        <input
+                            class="flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-gray-600 text-gray-50 border-green-500"
+                            id="configName"
+                            placeholder="Enter config name"
+                            name="configName"
+                            required />
+                        <button
+                            class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-primary/90 h-10 px-4 py-2 mt-4 bg-green-500 text-gray-50"
+                            type="submit">
+                            Add Config
+                        </button>
+                    </form>
+
+                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                        @ConfigTable(configs)
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
+}
+
+templ ConfigTable(configs []config.DBConfig) {
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Config Name
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Driver
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Host
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Port
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    User
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Database
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            for _, config := range configs {
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {config.ConfigName}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {config.Driver}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {config.Host}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {config.Port}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {config.User}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {config.Database}
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -263,13 +263,11 @@ var addCmd = &cobra.Command{
 		database := m.inputs[5].Value()
 		databaseDriver := m.inputs[6].Value()
 
-		portInt, _ := strconv.Atoi(port)
-
 		newConfig := config.DBConfig{
 			ConfigName: configName,
 			Driver:     databaseDriver,
 			Host:       host,
-			Port:       portInt,
+			Port:       port,
 			User:       user,
 			Password:   password,
 			Database:   database,

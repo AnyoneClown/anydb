@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/AnyoneClown/anydb/config"
-	"github.com/AnyoneClown/anydb/utils"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -44,14 +43,6 @@ var ConfigureCmd = &cobra.Command{
 }
 
 func init() {
-	utils.CreateFileAndDir()
-
-	var err error
-	config.Configs, err = utils.LoadConfigs(config.ConfigFile)
-	if err != nil {
-		fmt.Println("File doesn't exist, creating configuration file")
-	}
-
 	ConfigureCmd.AddCommand(addCmd)
 	ConfigureCmd.AddCommand(removeCmd)
 }
