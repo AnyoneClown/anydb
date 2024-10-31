@@ -6,14 +6,27 @@ master my life.
 */
 package config
 
+import "github.com/google/uuid"
+
 type DBConfig struct {
-	ConfigName string `yaml:"configName"`
-	Driver     string `yaml:"driver"`
-	Host       string `yaml:"host"`
-	Port       string `yaml:"port"`
-	User       string `yaml:"user"`
-	Password   string `yaml:"password"`
-	Database   string `yaml:"database"`
+	ID         uuid.UUID `yaml:"id"`
+	ConfigName string    `yaml:"configName"`
+	Driver     string    `yaml:"driver"`
+	Host       string    `yaml:"host"`
+	Port       string    `yaml:"port"`
+	User       string    `yaml:"user"`
+	Password   string    `yaml:"password"`
+	Database   string    `yaml:"database"`
+}
+
+type ConfigInput struct {
+	ConfigName string `json:"configName"`
+	Driver     string `json:"driver"`
+	Host       string `json:"host"`
+	Port       string `json:"port"`
+	User       string `json:"user"`
+	Password   string `json:"password"`
+	Database   string `json:"database"`
 }
 
 var Configs []DBConfig

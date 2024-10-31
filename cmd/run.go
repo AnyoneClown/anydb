@@ -3,13 +3,12 @@ Copyright © 2024 Denys <https://github.com/AnyoneClown>
 This is my license. There are many like it, but this one is mine.
 My license is my best friend. It is my life. I must master it as I must
 master my life.
-
 */
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"github.com/AnyoneClown/anydb/web"
+	"github.com/spf13/cobra"
 )
 
 // runCmd represents the run command

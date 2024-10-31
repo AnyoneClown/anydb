@@ -7,10 +7,8 @@ master my life.
 package configure
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/AnyoneClown/anydb/config"
@@ -19,6 +17,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -43,32 +42,6 @@ type addModel struct {
 	errors     []string
 }
 
-func validateNotEmpty(value string) error {
-	if strings.TrimSpace(value) == "" {
-		return fmt.Errorf("field cannot be empty")
-	}
-	return nil
-}
-
-func validatePort(value string) error {
-	port, err := strconv.Atoi(value)
-	if err != nil || port <= 0 || port > 65535 {
-		return fmt.Errorf("invalid port number")
-	}
-	return nil
-}
-
-func validateDatabaseDriver(value string) error {
-	value = strings.ToLower(value)
-	for _, driver := range config.SupportedDrivers {
-		if value == driver {
-			return nil
-		}
-	}
-	errorMessage := fmt.Sprintf("Supported drivers: %s", strings.Join(config.SupportedDrivers, ", "))
-	return errors.New(errorMessage)
-}
-
 func initialModel() addModel {
 	m := addModel{
 		inputs: make([]textinput.Model, 7),
@@ -85,30 +58,30 @@ func initialModel() addModel {
 		case 0:
 			t.Placeholder = "Config name"
 			t.Focus()
-			t.Validate = validateNotEmpty
+			t.Validate = utils.ValidateNotEmpty
 		case 1:
 			t.Placeholder = "Host"
 			t.CharLimit = 64
-			t.Validate = validateNotEmpty
+			t.Validate = utils.ValidateNotEmpty
 		case 2:
 			t.Placeholder = "Port"
 			t.CharLimit = 64
-			t.Validate = validatePort
+			t.Validate = utils.ValidatePort
 		case 3:
 			t.Placeholder = "User"
 			t.CharLimit = 64
-			t.Validate = validateNotEmpty
+			t.Validate = utils.ValidateNotEmpty
 		case 4:
 			t.Placeholder = "Password"
 			t.EchoMode = textinput.EchoPassword
 			t.EchoCharacter = '•'
-			t.Validate = validateNotEmpty
+			t.Validate = utils.ValidateNotEmpty
 		case 5:
 			t.Placeholder = "Database"
-			t.Validate = validateNotEmpty
+			t.Validate = utils.ValidateNotEmpty
 		case 6:
 			t.Placeholder = "Database driver"
-			t.Validate = validateDatabaseDriver
+			t.Validate = utils.ValidateDatabaseDriver
 		}
 
 		m.inputs[i] = t
@@ -264,6 +237,7 @@ var addCmd = &cobra.Command{
 		databaseDriver := m.inputs[6].Value()
 
 		newConfig := config.DBConfig{
+			ID:         uuid.New(),
 			ConfigName: configName,
 			Driver:     databaseDriver,
 			Host:       host,

@@ -7,12 +7,15 @@ master my life.
 package utils
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/AnyoneClown/anydb/config"
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
 )
 
 func CreateFileAndDir() error {
@@ -53,55 +56,28 @@ func CreateFileAndDir() error {
 	return nil
 }
 
-func LoadConfigs(file string) ([]config.DBConfig, error) {
-	var configs []config.DBConfig
+func ValidateNotEmpty(value string) error {
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("field cannot be empty")
+	}
+	return nil
+}
 
-	data, err := os.ReadFile(file)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return configs, nil
+func ValidatePort(value string) error {
+	port, err := strconv.Atoi(value)
+	if err != nil || port <= 0 || port > 65535 {
+		return fmt.Errorf("invalid port number")
+	}
+	return nil
+}
+
+func ValidateDatabaseDriver(value string) error {
+	value = strings.ToLower(value)
+	for _, driver := range config.SupportedDrivers {
+		if value == driver {
+			return nil
 		}
-		Log.Error("Failed to read configuration file", zap.Error(err))
-		return nil, err
 	}
-
-	err = yaml.Unmarshal(data, &configs)
-	if err != nil {
-		Log.Error("Failed to unmarshal configuration data", zap.Error(err))
-		return nil, err
-	}
-
-	return configs, nil
-}
-
-func SaveConfigs(configs []config.DBConfig, file string) error {
-	data, err := yaml.Marshal(configs)
-	if err != nil {
-		Log.Error("Failed to marshal configuration data", zap.Error(err))
-		return err
-	}
-
-	err = os.WriteFile(file, data, 0644)
-	if err != nil {
-		Log.Error("Failed to write configuration file", zap.Error(err))
-		return err
-	}
-
-	return nil
-}
-
-func LoadDefaultConfig() error {
-	data, err := os.ReadFile(config.DefaultConfigFile)
-	if err != nil {
-		Log.Error("Failed to read default configuration file", zap.Error(err))
-		return err
-	}
-
-	err = yaml.Unmarshal(data, &config.DefaultConfigData)
-	if err != nil {
-		Log.Error("Failed to unmarshal default configuration data", zap.Error(err))
-		return err
-	}
-
-	return nil
+	errorMessage := fmt.Sprintf("Supported drivers: %s", strings.Join(config.SupportedDrivers, ", "))
+	return errors.New(errorMessage)
 }

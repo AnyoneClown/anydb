@@ -19,10 +19,19 @@ func Web() {
 	// Disable trusted proxy warning.
 	engine.SetTrustedProxies(nil)
 
+	// Main Page
 	engine.GET("/", func(c *gin.Context) {
 		r := gintemplrenderer.New(c.Request.Context(), http.StatusOK, templates.DBConfigView(config.Configs))
 		c.Render(http.StatusOK, r)
 	})
 
+	// API for configs
+	api := engine.Group("/api")
+	{
+		handler := &Handler{}
+		api.GET("/configs", handler.GetConfigs)
+		api.GET("/configs/:id", handler.GetConfig)
+		api.POST("/configs", handler.CreateConfig)
+	}
 	engine.Run(":8080")
 }

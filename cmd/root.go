@@ -33,7 +33,7 @@ func Execute() {
 func init() {
 	utils.InitLogger() // Register Zap logger
 	defer utils.Log.Sync()
-	
+
 	utils.CreateFileAndDir()
 
 	var err error
