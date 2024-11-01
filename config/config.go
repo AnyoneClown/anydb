@@ -19,16 +19,6 @@ type DBConfig struct {
 	Database   string    `yaml:"database"`
 }
 
-type ConfigInput struct {
-	ConfigName string `json:"configName"`
-	Driver     string `json:"driver"`
-	Host       string `json:"host"`
-	Port       string `json:"port"`
-	User       string `json:"user"`
-	Password   string `json:"password"`
-	Database   string `json:"database"`
-}
-
 var Configs []DBConfig
 var ConfigFile string
 var DefaultConfigFile string

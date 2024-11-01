@@ -78,33 +78,3 @@ func GetConfigByID(id uuid.UUID) (*config.DBConfig, error) {
 	Log.Error("Configuration not found", zap.String("id", id.String()))
 	return nil, fmt.Errorf("configuration with ID %s not found", id)
 }
-
-func ValidateConfig(cfg config.ConfigInput) error {
-	validations := map[string]func(string) error{
-		"ConfigName": ValidateNotEmpty,
-		"Driver":     ValidateDatabaseDriver,
-		"Host":       ValidateNotEmpty,
-		"Port":       ValidatePort,
-		"User":       ValidateNotEmpty,
-		"Password":   ValidateNotEmpty,
-		"Database":   ValidateNotEmpty,
-	}
-
-	values := map[string]string{
-		"ConfigName": cfg.ConfigName,
-		"Driver":     cfg.Driver,
-		"Host":       cfg.Host,
-		"Port":       cfg.Port,
-		"User":       cfg.User,
-		"Password":   cfg.Password,
-		"Database":   cfg.Database,
-	}
-
-	for field, validate := range validations {
-		if err := validate(values[field]); err != nil {
-			return fmt.Errorf("%s: %w", field, err)
-		}
-	}
-
-	return nil
-}

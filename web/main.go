@@ -7,6 +7,8 @@ import (
 	"github.com/AnyoneClown/anydb/web/gintemplrenderer"
 	"github.com/AnyoneClown/anydb/web/templates"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 func Web() {
@@ -18,6 +20,11 @@ func Web() {
 
 	// Disable trusted proxy warning.
 	engine.SetTrustedProxies(nil)
+
+	// Custom validator
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("port", portValidator)
+	}
 
 	// Main Page
 	engine.GET("/", func(c *gin.Context) {

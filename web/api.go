@@ -1,14 +1,36 @@
 package web
 
 import (
+	"strconv"
+
 	"github.com/AnyoneClown/anydb/config"
 	"github.com/AnyoneClown/anydb/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type Handler struct{}
+
+type ConfigInput struct {
+	ConfigName string `json:"configName" binding:"required"`
+	Driver     string `json:"driver" binding:"required,oneof=postgres cockroachdb"`
+	Host       string `json:"host" binding:"required"`
+	Port       string `json:"port" binding:"required,port"`
+	User       string `json:"user" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+	Database   string `json:"database" binding:"required"`
+}
+
+// Custom validator for port
+func portValidator(fl validator.FieldLevel) bool {
+	port := fl.Field().String()
+	if p, err := strconv.Atoi(port); err == nil {
+		return p > 0 && p <= 65535
+	}
+	return false
+}
 
 // GET /api/configs
 func (h *Handler) GetConfigs(c *gin.Context) {
@@ -40,18 +62,16 @@ func (h *Handler) GetConfig(c *gin.Context) {
 
 // POST /api/configs
 func (h *Handler) CreateConfig(c *gin.Context) {
-	var input config.ConfigInput
+	var input ConfigInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.Log.Error("Invalid input", zap.Error(err))
+		validationErrors := err.(validator.ValidationErrors)
+		errorMessages := make(map[string]string)
+		for _, fieldError := range validationErrors {
+			errorMessages[fieldError.Field()] = fieldError.Error()
+		}
 		c.JSON(400, gin.H{"error": "Invalid input"})
-		return
-	}
-
-	// Validate inputs
-	if err := utils.ValidateConfig(input); err != nil {
-		utils.Log.Error("Invalid input", zap.Error(err))
-		c.JSON(400, gin.H{"error": "Input didn't pass validation"})
 		return
 	}
 
