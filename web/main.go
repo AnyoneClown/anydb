@@ -45,6 +45,9 @@ func Web() {
 		api.GET("/configs", handler.GetConfigs)
 		api.GET("/configs/:id", handler.GetConfig)
 		api.POST("/configs", handler.CreateConfig)
+		api.DELETE("/configs/:id", handler.DeleteConfig)
+		api.PUT("/configs/:id", handler.UpdateConfig)
+		api.POST("/configs/select/:id", handler.SelectConfig)
 	}
 	engine.Run(":8080")
 }
