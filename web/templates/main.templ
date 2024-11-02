@@ -3,96 +3,147 @@ package templates
 import "github.com/AnyoneClown/anydb/config"
 
 templ DBConfigView(configs []config.DBConfig) {
+    <!DOCTYPE html>
     <html>
-        <head>
-            <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <title>DB Configurations</title>
-        </head>
-        <style type="text/css">
+    <head>
+        <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <title>DB Configurations</title>
+        <style>
             tr.htmx-swapping td {
                 opacity: 0;
                 transition: opacity 1s ease-out;
             }
         </style>
-        <body>
-            <div class="min-h-screen bg-gray-900 flex flex-col items-center justify-start pt-10">
-                <div class="bg-gray-700 shadow rounded-lg p-6 text-gray-50">
-                    <h1 class="text-xl font-semibold mb-4 text-green-500">DB Configurations</h1>
-                    <p class="mb-6">Manage your database configurations below.</p>
-                    <form class="mb-4" hx-boost="true" hx-post="/dbconfig" hx-target="#configList" hx-on:submit="document.getElementById('configName').value=''">
-                        <label class="block text-sm font-medium mb-1" for="configName">
-                             Config Name
-                        </label>
-                        <input
-                            class="flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-gray-600 text-gray-50 border-green-500"
-                            id="configName"
-                            placeholder="Enter config name"
-                            name="configName"
-                            required />
-                        <button
-                            class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-primary/90 h-10 px-4 py-2 mt-4 bg-green-500 text-gray-50"
-                            type="submit">
-                            Add Config
-                        </button>
-                    </form>
+    </head>
+    <body>
+        <div class="min-h-screen bg-gray-900 flex flex-col items-center justify-start pt-10">
+            <div class="bg-gray-700 shadow rounded-lg p-6 text-gray-50">
+                <h1 class="text-xl font-semibold mb-4 text-green-500">DB Configurations</h1>
+                <p class="mb-6">Manage your database configurations below.</p>
+                
+                <form class="mb-4" hx-post="/dbconfig" hx-target="#configTable" hx-swap="outerHTML">
+                    <label class="block text-sm font-medium mb-1" for="configName">
+                        Config Name
+                    </label>
+                    <input
+                        class="flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-gray-600 text-gray-50 border-green-500"
+                        id="configName"
+                        placeholder="Enter config name"
+                        name="configName"
+                        required
+                    />
+                    <button
+                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-primary/90 h-10 px-4 py-2 mt-4 bg-green-500 text-gray-50"
+                        type="submit">
+                        Add Config
+                    </button>
+                </form>
 
-                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                        @ConfigTable(configs)
+                <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                    <div id="configTable">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-800">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Config Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Driver
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Host
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Port
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        User
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Database
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-gray-700 divide-y divide-gray-600" id="configRows">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </body>
-    </html>
-}
+        </div>
 
-templ ConfigTable(configs []config.DBConfig) {
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Config Name
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Driver
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Host
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Port
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Database
-                </th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            for _, config := range configs {
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {config.ConfigName}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {config.Driver}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {config.Host}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {config.Port}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {config.User}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {config.Database}
-                    </td>
-                </tr>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                loadConfigs();
+                setInterval(loadConfigs, 30000);
+            });
+
+            function loadConfigs() {
+                fetch('/api/configs')
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.getElementById('configRows');
+                        tbody.innerHTML = ''; // Очищаємо існуючі рядки
+
+                        data.data.forEach(config => {
+                            const tr = document.createElement('tr');
+                            tr.className = 'hover:bg-gray-600 transition-colors';
+                            
+                            tr.innerHTML = `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    ${config.ConfigName}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    ${config.Driver}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    ${config.Host}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    ${config.Port}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    ${config.User}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    ${config.Database}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                    <button 
+                                        onclick="deleteConfig('${config.ID}')"
+                                        class="text-red-400 hover:text-red-600 transition-colors"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            `;
+                            
+                            tbody.appendChild(tr);
+                        });
+                    })
+                    .catch(error => console.error('Error loading configs:', error));
             }
-        </tbody>
-    </table>
+
+            function deleteConfig(id) {
+                if (confirm('Are you sure you want to delete this configuration?')) {
+                    fetch(`/api/configs/${id}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            loadConfigs();
+                        } else {
+                            alert('Error deleting configuration');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            }
+        </script>
+    </body>
+    </html>
 }
