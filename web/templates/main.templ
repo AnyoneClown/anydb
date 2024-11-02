@@ -8,67 +8,193 @@ templ DBConfigView(configs []config.DBConfig) {
     <head>
         <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
         <title>DB Configurations</title>
         <style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            
             tr.htmx-swapping td {
                 opacity: 0;
-                transition: opacity 1s ease-out;
+                transition: opacity 0.3s ease-out;
+            }
+            
+            .input-focus-effect:focus {
+                box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+                border-color: rgb(34, 197, 94);
+            }
+            
+            .gradient-background {
+                background: linear-gradient(135deg, rgb(17, 24, 39) 0%, rgb(75, 85, 99) 100%);
+            }
+
+            /* Стилі для скролбару */
+            .custom-scrollbar::-webkit-scrollbar {
+                height: 8px;
+            }
+            
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: rgba(75, 85, 99, 0.1);
+                border-radius: 4px;
+            }
+            
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: rgba(75, 85, 99, 0.5);
+                border-radius: 4px;
+            }
+            
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: rgba(75, 85, 99, 0.7);
             }
         </style>
     </head>
-    <body>
-        <div class="min-h-screen bg-gray-900 flex flex-col items-center justify-start pt-10">
-            <div class="bg-gray-700 shadow rounded-lg p-6 text-gray-50">
-                <h1 class="text-xl font-semibold mb-4 text-green-500">DB Configurations</h1>
-                <p class="mb-6">Manage your database configurations below.</p>
+    <body class="gradient-background min-h-screen">
+        <div class="min-h-screen flex flex-col items-center justify-start py-6 px-2 sm:px-4 lg:px-6">
+            <div class="bg-gray-800 shadow-2xl rounded-xl p-4 sm:p-6 w-full max-w-[98%] border border-gray-700">
+                <div class="space-y-2 mb-6">
+                    <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+                        DB Configurations
+                    </h1>
+                    <p class="text-gray-400">Manage your database configurations securely in one place</p>
+                </div>
                 
-                <form class="mb-4" hx-post="/dbconfig" hx-target="#configTable" hx-swap="outerHTML">
-                    <label class="block text-sm font-medium mb-1" for="configName">
-                        Config Name
-                    </label>
-                    <input
-                        class="flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-gray-600 text-gray-50 border-green-500"
-                        id="configName"
-                        placeholder="Enter config name"
-                        name="configName"
-                        required
-                    />
+                <form class="space-y-4 mb-6" hx-post="/api/configs" hx-target="#configTable" hx-swap="outerHTML" hx-ext="json-enc">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-300" for="configName">
+                                Config Name
+                            </label>
+                            <input
+                                class="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 input-focus-effect transition-all duration-200"
+                                id="configName"
+                                placeholder="Enter config name"
+                                name="configName"
+                                required
+                            />
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-300" for="driver">
+                                Driver
+                            </label>
+                            <input
+                                class="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 input-focus-effect transition-all duration-200"
+                                id="driver"
+                                placeholder="postgres or cockroachdb"
+                                name="driver"
+                                required
+                            />
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-300" for="host">
+                                Host
+                            </label>
+                            <input
+                                class="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 input-focus-effect transition-all duration-200"
+                                id="host"
+                                placeholder="Enter host"
+                                name="host"
+                                required
+                            />
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-300" for="port">
+                                Port
+                            </label>
+                            <input
+                                class="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 input-focus-effect transition-all duration-200"
+                                id="port"
+                                placeholder="Enter port"
+                                name="port"
+                                required
+                            />
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-300" for="user">
+                                User
+                            </label>
+                            <input
+                                class="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 input-focus-effect transition-all duration-200"
+                                id="user"
+                                placeholder="Enter user"
+                                name="user"
+                                required
+                            />
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-300" for="password">
+                                Password
+                            </label>
+                            <input
+                                class="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 input-focus-effect transition-all duration-200"
+                                type="password"
+                                id="password"
+                                placeholder="Enter password"
+                                name="password"
+                                required
+                            />
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-300" for="database">
+                                Database
+                            </label>
+                            <input
+                                class="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 input-focus-effect transition-all duration-200"
+                                id="database"
+                                placeholder="Enter database"
+                                name="database"
+                                required
+                            />
+                        </div>
+                    </div>
+                    
                     <button
-                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-primary/90 h-10 px-4 py-2 mt-4 bg-green-500 text-gray-50"
+                        class="w-full sm:w-auto px-6 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                         type="submit">
-                        Add Config
+                        Add Configuration
                     </button>
                 </form>
 
-                <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                    <div id="configTable">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-800">
+                <div class="overflow-x-auto custom-scrollbar rounded-xl shadow-xl border border-gray-700">
+                    <div id="configTable" class="min-w-full">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-900">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
                                         Config Name
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
                                         Driver
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
                                         Host
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
                                         Port
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
                                         User
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
                                         Database
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-gray-700 divide-y divide-gray-600" id="configRows">
+                            <tbody class="bg-gray-800 divide-y divide-gray-700" id="configRows">
                             </tbody>
                         </table>
                     </div>
@@ -87,35 +213,36 @@ templ DBConfigView(configs []config.DBConfig) {
                     .then(response => response.json())
                     .then(data => {
                         const tbody = document.getElementById('configRows');
-                        tbody.innerHTML = ''; // Очищаємо існуючі рядки
+                        tbody.innerHTML = '';
 
-                        data.data.forEach(config => {
+                        data.data.forEach((config, index) => {
                             const tr = document.createElement('tr');
-                            tr.className = 'hover:bg-gray-600 transition-colors';
+                            tr.className = 'hover:bg-gray-700 transition-colors animate-fade-in';
+                            tr.style.animationDelay = `${index * 50}ms`;
                             
                             tr.innerHTML = `
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                     ${config.ConfigName}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                     ${config.Driver}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                     ${config.Host}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                     ${config.Port}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                     ${config.User}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                     ${config.Database}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                     <button 
                                         onclick="deleteConfig('${config.ID}')"
-                                        class="text-red-400 hover:text-red-600 transition-colors"
+                                        class="text-red-400 hover:text-red-300 transition-colors px-3 py-1 rounded-md hover:bg-red-500/10"
                                     >
                                         Delete
                                     </button>
