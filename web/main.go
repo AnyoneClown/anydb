@@ -19,7 +19,6 @@ import (
 
 func Web() {
 	engine := gin.Default()
-	engine.LoadHTMLFiles("./home.html")
 
 	ginHtmlRenderer := engine.HTMLRender
 	engine.HTMLRender = &gintemplrenderer.HTMLTemplRenderer{FallbackHtmlRenderer: ginHtmlRenderer}

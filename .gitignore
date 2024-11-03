@@ -47,4 +47,3 @@ dist-ssr
 *.sw?
 
 dist/
-*_templ.go
