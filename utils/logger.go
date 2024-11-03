@@ -22,6 +22,7 @@ func InitLogger() {
 
 	logPath = filepath.Join(homeDir, ".anydb", "go.log")
 	os.OpenFile(logPath, os.O_RDONLY|os.O_CREATE, 0666)
+	os.Setenv("LOG_PATH", logPath)
 
 	config := zap.NewProductionConfig()
 	config.OutputPaths = []string{"stdout", logPath}
