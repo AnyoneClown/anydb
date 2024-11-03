@@ -7,14 +7,24 @@ master my life.
 package utils
 
 import (
+	"os"
+	"path/filepath"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 var Log *zap.Logger
+var logPath string
 
 func InitLogger() {
+	homeDir, _ := os.UserHomeDir()
+
+	logPath = filepath.Join(homeDir, ".anydb", "go.log")
+	os.OpenFile(logPath, os.O_RDONLY|os.O_CREATE, 0666)
+
 	config := zap.NewProductionConfig()
+	config.OutputPaths = []string{"stdout", logPath}
 	config.EncoderConfig.TimeKey = "timestamp"
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
